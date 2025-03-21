@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Impressão de Caminhões</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        input { padding: 10px; width: 300px; margin-bottom: 20px; font-size: 16px; }
+        ul { list-style: none; padding: 0; width: 400px; }
+        li {
+            padding: 15px; margin-bottom: 10px;
+            background-color: #f4f4f4; border-radius: 5px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        button {
+            padding: 8px 12px; border: none;
+            background-color: #007bff; color: white;
+            cursor: pointer; border-radius: 4px;
+        }
+        button:hover { background-color: #0056b3; }
+    </style>
+    <script>
+        function filtrar() {
+            const filtro = document.getElementById('busca').value.toLowerCase();
+            const lista = document.getElementById('lista-pdfs');
+            const itens = lista.getElementsByTagName('li');
+            for (let item of itens) {
+                const texto = item.textContent.toLowerCase();
+                item.style.display = texto.includes(filtro) ? 'flex' : 'none';
+            }
+        }
+
+        function enviarImpressao(nomeArquivo) {
+            fetch("http://SEU_IP_LOCAL:5050/imprimir", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nome: nomeArquivo })
+            })
+            .then(res => res.json())
+            .then(data => alert(data.status || data.erro))
+            .catch(err => alert("Erro ao conectar com o agente de impressão"));
+        }
+
+        window.onload = function () {
+            document.getElementById('busca').value = "";
+            filtrar();
+        };
+    </script>
+</head>
+<body>
+    <h1>Selecione o caminhão:</h1>
+    <input type="text" id="busca" placeholder="Buscar por nome..." onkeyup="filtrar()" />
+    <ul id="lista-pdfs">
+        {% for arquivo in arquivos %}
+            <li>
+                <span>{{ arquivo }}</span>
+                <button onclick="enviarImpressao('{{ arquivo }}')">Imprimir</button>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
