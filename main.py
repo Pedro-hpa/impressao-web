@@ -1,34 +1,27 @@
 from fastapi import FastAPI, Request
-from pydantic import BaseModel
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import os
-import platform
-import requests
 
 app = FastAPI()
 
-PASTA_PDFS = "pdfs"  # Pasta onde os PDFs baixados serão salvos
-os.makedirs(PASTA_PDFS, exist_ok=True)
+# Configuração de diretórios
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PDF_DIR = os.path.join(BASE_DIR, "static/pdfs")
 
-class ImprimirRequest(BaseModel):
-    nome: str
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
-@app.post("/imprimir")
-def imprimir_arquivo(dados: ImprimirRequest):
-    url_pdf = f"https://impressao-web.onrender.com/pdf/{dados.nome}"
-    caminho_local = os.path.join(PASTA_PDFS, dados.nome)
+@app.get("/")
+def listar_pdfs(request: Request):
+    """Lista todos os PDFs disponíveis na pasta."""
+    arquivos = [f for f in os.listdir(PDF_DIR) if f.endswith(".pdf")]
+    return templates.TemplateResponse("index.html", {"request": request, "arquivos": arquivos})
 
-    try:
-        # Baixar o PDF da nuvem
-        resposta = requests.get(url_pdf)
-        with open(caminho_local, "wb") as f:
-            f.write(resposta.content)
-
-        # Imprimir (somente no Windows com Adobe/Reader padrão)
-        if platform.system() == "Windows":
-            os.startfile(caminho_local, "print")
-            return {"status": "Impressão enviada"}
-
-        return {"erro": "Impressão automática só implementada para Windows"}
-
-    except Exception as e:
-        return {"erro": str(e)}
+@app.get("/pdf/{arquivo}")
+def abrir_pdf(arquivo: str):
+    """Abre um arquivo PDF específico."""
+    caminho = os.path.join(PDF_DIR, arquivo)
+    return FileResponse(caminho, media_type="application/pdf")
+ 
+ 
