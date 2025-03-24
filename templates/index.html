@@ -1,45 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Impressão de Caminhões</title>
+    <meta charset="UTF-8">
+    <title>Impressão de Caminhões e Sprinter</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        input { padding: 10px; width: 300px; margin-bottom: 20px; font-size: 16px; }
-        ul { list-style: none; padding: 0; width: 400px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .menu {
+            margin-bottom: 30px;
+        }
+        .menu a {
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+            color: #007bff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: #e9f2ff;
+        }
+        .menu a:hover {
+            background-color: #d0e4ff;
+        }
+        input {
+            padding: 12px;
+            width: 300px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            max-width: 500px;
+            margin: 0 auto;
+        }
         li {
-            padding: 15px; margin-bottom: 10px;
-            background-color: #f4f4f4; border-radius: 5px;
-            display: flex; justify-content: space-between; align-items: center;
+            background-color: #fff;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         button {
-            padding: 8px 12px; border: none;
-            background-color: #007bff; color: white;
-            cursor: pointer; border-radius: 4px;
+            padding: 10px 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
         }
-        button:hover { background-color: #0056b3; }
+        button:hover {
+            background-color: #0056b3;
+        }
     </style>
     <script>
         function filtrar() {
             const filtro = document.getElementById('busca').value.toLowerCase();
-            const lista = document.getElementById('lista-pdfs');
-            const itens = lista.getElementsByTagName('li');
-            for (let item of itens) {
+            const itens = document.querySelectorAll('#lista-pdfs li');
+            itens.forEach(item => {
                 const texto = item.textContent.toLowerCase();
                 item.style.display = texto.includes(filtro) ? 'flex' : 'none';
-            }
+            });
         }
 
         function enviarImpressao(nomeArquivo) {
-            // Caminho do PDF que o usuário deseja imprimir
-            const urlPdf = `/static/pdfs/${nomeArquivo}`;
-            
-            // Abre o PDF em uma nova aba ou janela
-            const janela = window.open(urlPdf, '_blank');
-            
-            // Quando o PDF for carregado, chama a função de impressão
-            janela.onload = function() {
-                janela.print(); // Chama a função de impressão do navegador
-            };
+            const ehSprinter = window.location.pathname.includes("sprinter");
+            const rota = ehSprinter ? "sprinter-pdf" : "pdf";
+            const url = `/${rota}/${encodeURIComponent(nomeArquivo)}`;
+            window.open(url, "_blank");
         }
 
         window.onload = function () {
@@ -49,13 +91,17 @@
     </script>
 </head>
 <body>
-    <h1>Selecione o caminhão:</h1>
+    <h1>Impressão de Documentos</h1>
+    <div class="menu">
+        <a href="/">🚛 Caminhões</a>
+        <a href="/sprinter">🚐 Sprinter</a>
+    </div>
     <input type="text" id="busca" placeholder="Buscar por nome..." onkeyup="filtrar()" />
     <ul id="lista-pdfs">
         {% for arquivo in arquivos %}
             <li>
                 <span>{{ arquivo }}</span>
-                <button onclick="enviarImpressao('{{ arquivo }}')">Imprimir</button>
+                <button onclick="enviarImpressao('{{ arquivo }}')">Abrir</button>
             </li>
         {% endfor %}
     </ul>
