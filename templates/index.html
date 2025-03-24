@@ -30,14 +30,16 @@
         }
 
         function enviarImpressao(nomeArquivo) {
-            fetch("http://192.168.150.39:5050/imprimir", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nome: nomeArquivo })
-})
-            .then(res => res.json())
-            .then(data => alert(data.status || data.erro))
-            .catch(err => alert("Erro ao conectar com o agente de impressão"));
+            // Caminho do PDF que o usuário deseja imprimir
+            const urlPdf = `/static/pdfs/${nomeArquivo}`;
+            
+            // Abre o PDF em uma nova aba ou janela
+            const janela = window.open(urlPdf, '_blank');
+            
+            // Quando o PDF for carregado, chama a função de impressão
+            janela.onload = function() {
+                janela.print(); // Chama a função de impressão do navegador
+            };
         }
 
         window.onload = function () {
